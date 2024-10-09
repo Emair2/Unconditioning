@@ -12,8 +12,53 @@ const instructions = [
     "Why are you obeying it?",  // 指令3：为什么要服从它？
     "Don't listen to it",  // 指令4：不要听它
     "Keep walking",  // 指令5：继续走
-    "Ignore it"  // 指令6：忽视它
+    "Ignore it",  // 指令6：忽视它
+    "What if you do something different?",  // 指令7：如果你做些不一样的事情呢？
+    "Take a deep breath and look around",  // 指令8：深呼吸，环顾四周
+    "Are you really in control?",  // 指令9：你真的在掌控吗？
+    "Pause and think",  // 指令10：停下来想想
+    "Do you feel compelled?",  // 指令11：你感到被迫了吗？
+    "Challenge this voice",  // 指令12：挑战这个声音
+    "Break the routine",  // 指令13：打破常规
+    "Why conform?",  // 指令14：为什么要顺从？
+    "Do you trust me?",  // 指令15：你信任我吗？
+    "Stop now",  // 指令16：现在停下来
+    "Take one step back",  // 指令17：后退一步
+    "Take two steps forward",  // 指令18：前进两步
+    "Turn around",  // 指令19：转身
+    "Look at someone near you",  // 指令20：看向你身边的人
+    "Listen to your instincts",  // 指令21：倾听你的直觉
+    "Question everything",  // 指令22：质疑一切
+    "Embrace uncertainty",  // 指令23：拥抱不确定性
+    "Don't be afraid",  // 指令24：不要害怕
+    "Smile at the unknown",  // 指令25：对未知微笑
+    "Take your time",  // 指令26：慢慢来
+    "Why rush?",  // 指令27：为什么要匆忙？
+    "Stay still",  // 指令28：保持静止
+    "Do you enjoy this?",  // 指令29：你喜欢这样吗？
+    "Take a different path",  // 指令30：走一条不同的路
+    "Are you sure?",  // 指令31：你确定吗？
+    "Doubt is good",  // 指令32：怀疑是好的
+    "Turn left",  // 指令33：向左转
+    "Turn right",  // 指令34：向右转
+    "Listen carefully",  // 指令35：仔细听
+    "Watch your step",  // 指令36：注意脚下
+    "You don't have to follow",  // 指令37：你不必遵循
+    "Try something unexpected",  // 指令38：尝试一些意想不到的事情
+    "Go against the grain",  // 指令39：反其道而行之
+    "Do the opposite",  // 指令40：做相反的事情
+    "Trust yourself",  // 指令41：相信自己
+    "Hesitate for a moment",  // 指令42：犹豫片刻
+    "Feel the ground beneath you",  // 指令43：感受脚下的地面
+    "What if this is all meaningless?",  // 指令44：如果这一切都毫无意义呢？
+    "Laugh at this",  // 指令45：对这件事笑笑
+    "Close your eyes for a moment",  // 指令46：闭上眼睛片刻
+    "Take a risk",  // 指令47：冒个险
+    "Think about why you're here",  // 指令48：想想你为什么在这里
+    "Resist this command",  // 指令49：抵抗这个命令
+    "Create your own rule",  // 指令50：制定你自己的规则
 ];
+
 
 let isCameraActive = true;  // 标记是否显示摄像头画面
 const overlay = document.getElementById('overlay');  // 获取覆盖层元素
