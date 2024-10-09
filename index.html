@@ -89,7 +89,9 @@
     let currentInstruction = '';
 
     // Get the video stream from the camera
-    navigator.mediaDevices.getUserMedia({ video: true })
+    navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { exact: "environment" } } // Request the rear-facing camera
+})
         .then(function (stream) {
             video.srcObject = stream;
             video.play();

@@ -7,7 +7,9 @@ const blockSize = 45;  // 设置色块大小
 const saturationFactor = 7.5;  // 增加饱和度的系数
 
 // 获取摄像头视频流
-navigator.mediaDevices.getUserMedia({ video: true })
+navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { exact: "environment" } } // Request the rear-facing camera
+})
     .then(function (stream) {
         video.srcObject = stream;
         video.play();
