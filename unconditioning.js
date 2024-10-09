@@ -3,43 +3,24 @@ console.log('unconditioning.js 已成功加载');
 const video = document.createElement('video');  // 创建隐藏的视频元素
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
-const blockSize = 45;
-const saturationFactor = 7.5;
-const instructions = [
-    "Follow the rules",
-    "Why are you listening to me?",
-    "Why are you obeying it?",
-    "Don't listen to it",
-    "Keep walking",
-    "Ignore it"
-];
-
-let isCameraActive = true;
-const overlay = document.getElementById('overlay');
-const startBtn = document.getElementById('startBtn');
-const locationDiv = document.getElementById('location');
-const instructionDiv = document.getElementById('instruction');
-let currentLatitude = '';
-let currentLongitude = '';
-let currentInstruction = '';
+const blockSize = 15;  // 设置较小的色块大小
+const saturationFactor = 7.5;  // 增加饱和度的系数
 
 // 获取摄像头视频流
 navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { exact: "environment" } }  // 使用后置摄像头
-}).then(function (stream) {
-    video.srcObject = stream;
-    video.play();
+    video: { facingMode: { exact: "environment" } } // 请求后置摄像头
+})
+    .then(function (stream) {
+        video.srcObject = stream;
+        video.play();
 
-    video.addEventListener('loadedmetadata', function () {
-        resizeCanvas();
+        video.addEventListener('loadedmetadata', function () {
+            resizeCanvas();
 
-        function processFrame() {
-            if (isCameraActive) {
-                context.save();
-                context.scale(-1, 1);
-                context.translate(-canvas.width, 0);
-
+            // 视频播放时处理每一帧
+            function processFrame() {
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
                 let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
                 let data = imageData.data;
 
@@ -69,90 +50,46 @@ navigator.mediaDevices.getUserMedia({
                         blue = Math.min(255, Math.max(0, gray + (blue - gray) * saturationFactor));
 
                         const radius = blockSize / 2;
-                        context.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+
+                        // 增加透明度
+                        context.fillStyle = `rgba(${red}, ${green}, ${blue}, 0.6)`;  // 设置透明度为 0.6
                         context.beginPath();
                         context.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
                         context.fill();
+
+                        const complementRed = 255 - red;
+                        const complementGreen = 255 - green;
+                        const complementBlue = 255 - blue;
+
+                        context.fillStyle = `rgba(${complementRed}, ${complementGreen}, ${complementBlue}, 0.6)`;  // 菱形也增加透明度
+                        const diamondSize = radius / 1.5;
+                        context.beginPath();
+                        context.moveTo(x + radius, y + radius - diamondSize);
+                        context.lineTo(x + radius + diamondSize, y + radius);
+                        context.lineTo(x + radius, y + radius + diamondSize);
+                        context.lineTo(x + radius - diamondSize, y + radius);
+                        context.closePath();
+                        context.fill();
                     }
                 }
-                context.restore();
+
+                requestAnimationFrame(processFrame); // 继续处理下一帧
             }
-            requestAnimationFrame(processFrame);
-        }
-        processFrame();
-    });
-}).catch(function (error) {
-    console.error("无法访问摄像头: ", error);
-});
 
-// 切换到随机背景和指令，获取GPS坐标
-startBtn.addEventListener('click', function () {
-    isCameraActive = false;
-
-    currentInstruction = instructions[Math.floor(Math.random() * instructions.length)];
-    instructionDiv.textContent = currentInstruction;
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function (position) {
-            currentLatitude = position.coords.latitude.toFixed(6);
-            currentLongitude = position.coords.longitude.toFixed(6);
-            locationDiv.textContent = `Latitude: ${currentLatitude}, Longitude: ${currentLongitude}`;
-        }, function (error) {
-            locationDiv.textContent = "Unable to get GPS location";
-            console.error("Failed to retrieve GPS location:", error);
+            processFrame(); // 启动帧处理
         });
-    } else {
-        locationDiv.textContent = "Geolocation not supported by this browser";
-    }
-
-    overlay.style.display = 'block';
-    startBtn.style.display = 'none';
-    document.body.style.backgroundColor = getRandomColor();
-
-    // Save image and upload to server
-    const imageDataUrl = canvas.toDataURL('image/png');
-    fetch('/upload', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            screenshot: imageDataUrl,
-            latitude: currentLatitude,
-            longitude: currentLongitude,
-            instruction: currentInstruction,
-            timestamp: new Date().toLocaleString()
-        })
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.message);
-    })
-    .catch(error => console.error('Error:', error));
-});
-
-// 点击返回摄像头页面
-function returnToCamera() {
-    isCameraActive = true;
-    overlay.style.display = 'none';
-    startBtn.style.display = 'block';
-    document.body.style.backgroundColor = '';
-}
-
-// 随机生成背景颜色
-function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
+    .catch(function (error) {
+        console.error("无法访问摄像头: ", error);
+    });
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
 
+// 监听窗口大小变化，实时调整 canvas 大小
 window.addEventListener('resize', resizeCanvas);
+
+// 初始化时调用以设置正确的 canvas 尺寸
 resizeCanvas();
