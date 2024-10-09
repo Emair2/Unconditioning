@@ -4,7 +4,7 @@ console.log('unconditioning.js 已成功加载');
 const video = document.createElement('video');  // 创建隐藏的视频元素
 const canvas = document.getElementById('canvas');  // 获取 canvas 元素
 const context = canvas.getContext('2d');  // 获取 canvas 的 2D 上下文
-const blockSize = 20;  // 设置色块大小
+let blockSize = 45;  // 默认色块大小
 const saturationFactor = 7.5;  // 增加颜色的饱和度系数
 const instructions = [
     "Follow the rules",  // 指令1：遵守规则
@@ -24,9 +24,18 @@ let currentLatitude = '';  // 当前的纬度信息
 let currentLongitude = '';  // 当前的经度信息
 let currentInstruction = '';  // 当前显示的指令
 
+// 检查设备类型并调整色块大小
+function adjustBlockSize() {
+    if (window.innerWidth <= 768) {
+        return 30;  // 对于手机设备，使用较小的色块
+    } else {
+        return 45;  // 对于平板和电脑，使用默认色块
+    }
+}
+
 // 获取摄像头视频流
 navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { exact: "environment" } }  // 使用后置摄像头
+    video: { facingMode: { ideal: "environment" } }  // 使用后置摄像头
 }).then(function (stream) {
     video.srcObject = stream;  // 将视频流绑定到 video 元素
     video.play();  // 播放视频流
@@ -47,6 +56,8 @@ navigator.mediaDevices.getUserMedia({
                 let data = imageData.data;  // 提取像素数据
 
                 context.clearRect(0, 0, canvas.width, canvas.height);  // 清除画布内容
+
+                blockSize = adjustBlockSize();  // 调整 blockSize 大小
 
                 for (let y = 0; y < canvas.height; y += blockSize) {  // 遍历每一个色块
                     for (let x = 0; x < canvas.width; x += blockSize) {
