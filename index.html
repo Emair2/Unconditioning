@@ -88,87 +88,87 @@
     let currentLongitude = '';
     let currentInstruction = '';
 
-    // Get the video stream from the camera
+    // Get the video stream from the rear camera
     navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { exact: "environment" } } // Request the rear-facing camera
-})
-        .then(function (stream) {
-            video.srcObject = stream;
-            video.play();
+        video: { facingMode: { exact: "environment" } } // Request the rear-facing camera
+    })
+    .then(function (stream) {
+        video.srcObject = stream;
+        video.play();
 
-            video.addEventListener('loadedmetadata', function () {
-                resizeCanvas();
+        video.addEventListener('loadedmetadata', function () {
+            resizeCanvas();
 
-                function processFrame() {
-                    if (isCameraActive) {
-                        context.save();  // Save the current canvas state
-                        context.scale(-1, 1);  // Flip horizontally
-                        context.translate(-canvas.width, 0);  // Translate the canvas back
+            function processFrame() {
+                if (isCameraActive) {
+                    context.save();  // Save the current canvas state
+                    context.scale(-1, 1);  // Flip horizontally
+                    context.translate(-canvas.width, 0);  // Translate the canvas back
 
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                        let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                        let data = imageData.data;
+                    let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    let data = imageData.data;
 
-                        context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.clearRect(0, 0, canvas.width, canvas.height);
 
-                        for (let y = 0; y < canvas.height; y += blockSize) {
-                            for (let x = 0; x < canvas.width; x += blockSize) {
-                                let red = 0, green = 0, blue = 0, count = 0;
+                    for (let y = 0; y < canvas.height; y += blockSize) {
+                        for (let x = 0; x < canvas.width; x += blockSize) {
+                            let red = 0, green = 0, blue = 0, count = 0;
 
-                                for (let dy = 0; dy < blockSize && y + dy < canvas.height; dy++) {
-                                    for (let dx = 0; dx < blockSize && x + dx < canvas.width; dx++) {
-                                        let index = ((y + dy) * canvas.width + (x + dx)) * 4;
-                                        red += data[index];
-                                        green += data[index + 1];
-                                        blue += data[index + 2];
-                                        count++;
-                                    }
+                            for (let dy = 0; dy < blockSize && y + dy < canvas.height; dy++) {
+                                for (let dx = 0; dx < blockSize && x + dx < canvas.width; dx++) {
+                                    let index = ((y + dy) * canvas.width + (x + dx)) * 4;
+                                    red += data[index];
+                                    green += data[index + 1];
+                                    blue += data[index + 2];
+                                    count++;
                                 }
-
-                                red = Math.floor(red / count);
-                                green = Math.floor(green / count);
-                                blue = Math.floor(blue / count);
-
-                                let gray = (red + green + blue) / 3;
-                                red = Math.min(255, Math.max(0, gray + (red - gray) * saturationFactor));
-                                green = Math.min(255, Math.max(0, gray + (green - gray) * saturationFactor));
-                                blue = Math.min(255, Math.max(0, gray + (blue - gray) * saturationFactor));
-
-                                const radius = blockSize / 2;
-                                context.fillStyle = `rgb(${red}, ${green}, ${blue})`;
-                                context.beginPath();
-                                context.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
-                                context.fill();
-
-                                const complementRed = 255 - red;
-                                const complementGreen = 255 - green;
-                                const complementBlue = 255 - blue;
-
-                                context.fillStyle = `rgb(${complementRed}, ${complementGreen}, ${complementBlue})`;
-                                const diamondSize = radius / 1.5;
-                                context.beginPath();
-                                context.moveTo(x + radius, y + radius - diamondSize);
-                                context.lineTo(x + radius + diamondSize, y + radius);
-                                context.lineTo(x + radius, y + radius + diamondSize);
-                                context.lineTo(x + radius - diamondSize, y + radius);
-                                context.closePath();
-                                context.fill();
                             }
-                        }
 
-                        context.restore();
+                            red = Math.floor(red / count);
+                            green = Math.floor(green / count);
+                            blue = Math.floor(blue / count);
+
+                            let gray = (red + green + blue) / 3;
+                            red = Math.min(255, Math.max(0, gray + (red - gray) * saturationFactor));
+                            green = Math.min(255, Math.max(0, gray + (green - gray) * saturationFactor));
+                            blue = Math.min(255, Math.max(0, gray + (blue - gray) * saturationFactor));
+
+                            const radius = blockSize / 2;
+                            context.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+                            context.beginPath();
+                            context.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
+                            context.fill();
+
+                            const complementRed = 255 - red;
+                            const complementGreen = 255 - green;
+                            const complementBlue = 255 - blue;
+
+                            context.fillStyle = `rgb(${complementRed}, ${complementGreen}, ${complementBlue})`;
+                            const diamondSize = radius / 1.5;
+                            context.beginPath();
+                            context.moveTo(x + radius, y + radius - diamondSize);
+                            context.lineTo(x + radius + diamondSize, y + radius);
+                            context.lineTo(x + radius, y + radius + diamondSize);
+                            context.lineTo(x + radius - diamondSize, y + radius);
+                            context.closePath();
+                            context.fill();
+                        }
                     }
 
-                    requestAnimationFrame(processFrame);
+                    context.restore();
                 }
 
-                processFrame();
-            });
-        })
-        .catch(function (error) {
-            console.error("Unable to access the camera: ", error);
+                requestAnimationFrame(processFrame);
+            }
+
+            processFrame();
         });
+    })
+    .catch(function (error) {
+        console.error("Unable to access the camera: ", error);
+    });
 
     // Switch to random background and instruction, get GPS coordinates
     startBtn.addEventListener('click', function() {
@@ -197,12 +197,26 @@
         startBtn.style.display = 'none';
         document.body.style.backgroundColor = getRandomColor();
         
-        // Save image
+        // Save image and upload to server
         const imageDataUrl = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = imageDataUrl;
-        link.download = 'screenshot.png';
-        link.click();
+        fetch('/upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                screenshot: imageDataUrl,
+                latitude: currentLatitude,
+                longitude: currentLongitude,
+                instruction: currentInstruction,
+                timestamp: new Date().toLocaleString()
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.message);
+        })
+        .catch(error => console.error('Error:', error));
     });
 
     // Click to return to the camera page
@@ -230,34 +244,6 @@
 
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
-
-    // Save image and upload to server
-const imageDataUrl = canvas.toDataURL('image/png');
-const link = document.createElement('a');
-link.href = imageDataUrl;
-link.download = 'screenshot.png';
-link.click();
-
-// Send screenshot data to the server
-fetch('/upload', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        screenshot: imageDataUrl,
-        latitude: currentLatitude,
-        longitude: currentLongitude,
-        instruction: currentInstruction,
-        timestamp: new Date().toLocaleString()
-    })
-})
-.then(response => response.json())
-.then(data => {
-    console.log(data.message);
-})
-.catch(error => console.error('Error:', error));
-
 </script>
 
 </body>
