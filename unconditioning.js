@@ -4,7 +4,7 @@ console.log('unconditioning.js 已成功加载');
 const video = document.createElement('video');  // 创建隐藏的视频元素
 const canvas = document.getElementById('canvas');  // 获取 canvas 元素
 const context = canvas.getContext('2d');  // 获取 canvas 的 2D 上下文
-const blockSize = 45;  // 设置色块大小
+const blockSize = 20;  // 设置色块大小
 const saturationFactor = 7.5;  // 增加颜色的饱和度系数
 const instructions = [
     "Follow the rules",  // 指令1：遵守规则
