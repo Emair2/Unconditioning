@@ -26,7 +26,7 @@ let currentInstruction = '';  // 当前显示的指令
 
 // 获取摄像头视频流
 navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { ideal: "environment" } }  // 使用后置摄像头
+    video: { facingMode: "environment" }  // 尽量使用后置摄像头，但不强制
 }).then(function (stream) {
     video.srcObject = stream;  // 将视频流绑定到 video 元素
     video.play();  // 播放视频流
@@ -44,51 +44,52 @@ navigator.mediaDevices.getUserMedia({
 
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);  // 绘制视频帧到 canvas 上
 
-                let imageData = context.getImageData(0, 0, canvas.width, canvas.height);  // 获取画面像素数据
-                let data = imageData.data;  // 提取像素数据
+                try {
+                    let imageData = context.getImageData(0, 0, canvas.width, canvas.height);  // 获取画面像素数据
+                    let data = imageData.data;  // 提取像素数据
 
-                context.clearRect(0, 0, canvas.width, canvas.height);  // 清除画布内容
+                    context.clearRect(0, 0, canvas.width, canvas.height);  // 清除画布内容
 
-                for (let y = 0; y < canvas.height; y += blockSize) {  // 遍历每一个色块
-                    for (let x = 0; x < canvas.width; x += blockSize) {
-                        let red = 0, green = 0, blue = 0, count = 0;
+                    for (let y = 0; y < canvas.height; y += blockSize) {  // 遍历每一个色块
+                        for (let x = 0; x < canvas.width; x += blockSize) {
+                            let red = 0, green = 0, blue = 0, count = 0;
 
-                        for (let dy = 0; dy < blockSize && y + dy < canvas.height; dy++) {
-                            for (let dx = 0; dx < blockSize && x + dx < canvas.width; dx++) {
-                                let index = ((y + dy) * canvas.width + (x + dx)) * 4;
-                                red += data[index];  // 累加红色分量
-                                green += data[index + 1];  // 累加绿色分量
-                                blue += data[index + 2];  // 累加蓝色分量
-                                count++;
+                            for (let dy = 0; dy < blockSize && y + dy < canvas.height; dy++) {
+                                for (let dx = 0; dx < blockSize && x + dx < canvas.width; dx++) {
+                                    let index = ((y + dy) * canvas.width + (x + dx)) * 4;
+                                    red += data[index];  // 累加红色分量
+                                    green += data[index + 1];  // 累加绿色分量
+                                    blue += data[index + 2];  // 累加蓝色分量
+                                    count++;
+                                }
                             }
+
+                            // 计算色块的平均颜色值
+                            red = Math.floor(red / count);
+                            green = Math.floor(green / count);
+                            blue = Math.floor(blue / count);
+
+                            // 调整饱和度
+                            let gray = (red + green + blue) / 3;
+                            red = Math.min(255, Math.max(0, gray + (red - gray) * saturationFactor));
+                            green = Math.min(255, Math.max(0, gray + (green - gray) * saturationFactor));
+                            blue = Math.min(255, Math.max(0, gray + (blue - gray) * saturationFactor));
+
+                            // 绘制圆形色块
+                            const radius = blockSize / 2;
+                            context.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+                            context.beginPath();
+                            context.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
+                            context.fill();
                         }
-
-                        // 计算色块的平均颜色值
-                        red = Math.floor(red / count);
-                        green = Math.floor(green / count);
-                        blue = Math.floor(blue / count);
-
-                        // 调整饱和度
-                        let gray = (red + green + blue) / 3;
-                        red = Math.min(255, Math.max(0, gray + (red - gray) * saturationFactor));
-                        green = Math.min(255, Math.max(0, gray + (green - gray) * saturationFactor));
-                        blue = Math.min(255, Math.max(0, gray + (blue - gray) * saturationFactor));
-
-                        // 绘制圆形色块
-                        const radius = blockSize / 2;
-                        context.fillStyle = `rgb(${red}, ${green}, ${blue})`;
-                        context.beginPath();
-                        context.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
-                        context.fill();
                     }
+                } catch (e) {
+                    console.error("处理帧时出错：", e);
                 }
                 context.restore();  // 恢复 canvas 状态
             }
 
-            // 控制帧率，减少设备负担
-            setTimeout(() => {
-                requestAnimationFrame(processFrame);
-            }, 100); // 每秒10帧
+            requestAnimationFrame(processFrame);  // 循环调用处理下一帧
         }
         processFrame();  // 开始处理帧
     });
