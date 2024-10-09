@@ -3,29 +3,17 @@ console.log('unconditioning.js 已成功加载');
 const video = document.createElement('video');  // 创建隐藏的视频元素
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
-const blockSize = 30;  // 设置色块大小，减少处理量
+const blockSize = 60;  // 设置较大的色块大小以减少处理量
 const saturationFactor = 5.0;  // 调整饱和度的系数以增强效果
 let isCameraActive = true; // 摄像头活动状态
-let currentLatitude = '';
-let currentLongitude = '';
-let currentInstruction = '';
-
-const instructions = [
-    "Follow the rules",
-    "Why are you listening to me?",
-    "Why are you obeying it?",
-    "Don't listen to it",
-    "Keep walking",
-    "Ignore it"
-];
 
 // 获取摄像头视频流
 if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices.getUserMedia({
         video: { 
             facingMode: { exact: "environment" },  // 请求后置摄像头
-            width: { ideal: 640 },                 // 设置视频分辨率
-            height: { ideal: 480 }
+            width: { ideal: 320 },                 // 调低视频分辨率，减少处理量
+            height: { ideal: 240 }
         }
     })
     .then(function (stream) {
@@ -82,24 +70,6 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                             context.fillStyle = `rgb(${red}, ${green}, ${blue})`;
                             context.beginPath();
                             context.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
-                            context.fill();
-
-                            // 计算互补色
-                            const complementRed = 255 - red;
-                            const complementGreen = 255 - green;
-                            const complementBlue = 255 - blue;
-
-                            // 绘制菱形（使用互补色）
-                            context.fillStyle = `rgb(${complementRed}, ${complementGreen}, ${complementBlue})`;
-
-                            // 菱形的四个顶点
-                            const diamondSize = radius / 1.5;  // 菱形的大小相对于圆形稍小
-                            context.beginPath();
-                            context.moveTo(x + radius, y + radius - diamondSize);  // 顶部
-                            context.lineTo(x + radius + diamondSize, y + radius);  // 右侧
-                            context.lineTo(x + radius, y + radius + diamondSize);  // 底部
-                            context.lineTo(x + radius - diamondSize, y + radius);  // 左侧
-                            context.closePath();
                             context.fill();
                         }
                     }
